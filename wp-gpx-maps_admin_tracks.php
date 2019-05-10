@@ -9,11 +9,15 @@
 		return;
 
 	$gpxRegEx = '/.gpx$/i';
-	if ( current_user_can('manage_options') ){
-		$menu_root = "options-general.php";
-	} else if ( current_user_can('publish_posts') ){
-		$menu_root = "admin.php";
-	}
+        function get_options_url() {
+            if ( current_user_can('manage_options') ){
+                    $menu_root = "options-general.php";
+            } else if ( current_user_can('publish_posts') ){
+                    $menu_root = "admin.php";
+            }
+            return get_bloginfo('wpurl') . '/wp-admin/' . $menu_root . '?page=WP-GPX-Maps';
+        }
+        $gpxOptionsUrl = get_options_url();
 
 	if ( isset($_POST['clearcache']) )
 	{
@@ -38,7 +42,7 @@
 
 		<div class="tablenav top">
 		<?php
-            echo '<form enctype="multipart/form-data" method="POST" style="float:left; margin:5px 20px 0 0" action="' . get_bloginfo('wpurl') . '/wp-admin/' . $menu_root . '?page=WP-GPX-Maps">'; ?>
+            echo '<form enctype="multipart/form-data" method="POST" style="float:left; margin:5px 20px 0 0" action="' . $gpxOptionsUrl . '">'; ?>
 				<?php _e( 'Choose a file to upload:', 'wp-gpx-maps' )?> <input name="uploadedfile[]" type="file" onchange="submitgpx(this);" multiple />
 				<?php
 					if ( isset($_FILES['uploadedfile']) )
@@ -72,7 +76,7 @@
 				?>
 			</form>
 
-			<form method="POST" style="float:left; margin:5px 20px 0 0" action="/wp-admin/options-general.php?page=WP-GPX-Maps&_wpnonce=<?php echo wp_create_nonce( 'wpgpx_clearcache_nonce' ) ?>" >
+                        <form method="POST" style="float:left; margin:5px 20px 0 0" action="<?php echo $gpxOptionsUrl ?>&_wpnonce=<?php echo wp_create_nonce( 'wpgpx_clearcache_nonce' ) ?>" >
 				<input type="submit" name="clearcache" value="<?php _e( 'Clear Cache', 'wp-gpx-maps' ); ?>" />
 			</form>
 
@@ -141,7 +145,7 @@
 		closedir($handle);
 	}
 
-	$wpgpxmaps_gpxRelativePath = get_site_url(null, '/wp-content/uploads/gpx/');
+	$wpgpxmaps_gpxRelativePath = get_site_url(null, $relativeGpxPath);
 
 ?>
 
@@ -166,7 +170,7 @@
 
 				return [
 					'<b>' + row.name + '</b><br />',
-					'<a class="delete_gpx_row" href="/wp-admin/options-general.php?page=WP-GPX-Maps&_wpnonce=' + row.nonce + '" >Delete</a>',
+                                        '<a class="delete_gpx_row" href="<?php echo $gpxOptionsUrl ?>&_wpnonce=' + row.nonce + '" >Delete</a>',
 					' | ',
 					'<a href="<?php echo $wpgpxmaps_gpxRelativePath ?>' + row.name + '">Download</a>',
 					' | ',
